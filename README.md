@@ -177,7 +177,7 @@ It is quite possible that errors or ambiguities may be found in the task specifi
 If you discover an error, ambiguity, or bug, you will receive the maximum "Marker's discretion" credit (1 mark). The following rules apply:
 
 1. It must be a report on the currently posted version of the material.
-2. It must be reported on the UTS Online discussion board to be accepted.
+2. It must be reported on the U + 2202to be accepted.
 3. It must be a genuine bug. By genuine I mean it requires me to amend the material.
 4. If a number of students post a report on the same bug, the first who posted will receive the mark.
 5. No matter how many bug reports you make, you can only get 1 mark.

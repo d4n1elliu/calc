@@ -22,4 +22,14 @@ let calculator = Calculator();
 // Calculate the result
 let result = calculator.add(no1: 1, no2: 1);
 
-print(result)
+// BODMAS (Multiplication first, then add and sub)
+
+
+//print(result)
+//print(1 - 2)
+//print(4 + -10)
+//print(20 / 3)
+//print(5 + 20 * 3)
+print(-5 / +2)
+print(+2 - -2)
+print(2 + 4 * 3 - 6)
