@@ -8,6 +8,11 @@
 
 import Foundation
 
+enum CalculatorError: Error {
+    case divisionByZero
+    case invalidOperator
+}
+
 class Calculator {
     
     /// Storing immediate results after evaluating a certain expression
@@ -196,6 +201,25 @@ class Calculator {
     /// 3. "x" -> multiplication
     /// 4. "/" -> division
     /// 5. "%" -> modulus
+
+    func operatorHandling(_ operatorSymbol: String, left: Int, right: Int) throws -> Int {
+        switch operatorSymbol {
+            case "+":
+                return left + right
+            case "-":
+                return left - right
+            case "x":
+                return left * right
+            case "/":
+                guard right != 0 else { throw CalculatorError.divisionByZero }
+                return left / right
+            case "%":
+                guard right != 0 else { throw CalculatorError.divisionByZero }
+                return left % right
+            default:
+            throw CalculatorError.invalidOperator
+        }
+    }
     
     /// TODO
     /// ---------------------------------------------------------------------
@@ -220,9 +244,21 @@ class Calculator {
     /// modulus(a,b)
     ///
     /// Each should validate inputs before computing.
+    /// Helper function for multiply, divide & modulus
+    func multiply(_ a: Int, _ b: Int) -> Int {
+        return a * b
+    }
+
+    func divide(_ a: Int, _ b: Int) -> Int {
+        return a / b
+    }
+    
+    func modulus(_ a: Int, _ b: Int) -> Int {
+        return a % b
+    }
     
     /// TODO
-    /// ---------------------------------------------------------------------
+    /// -------------------------------------------------------------------
     /// Error detection
     /// ---------------------------------------------------------------------
     /// Must detect:
