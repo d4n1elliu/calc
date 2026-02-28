@@ -11,6 +11,7 @@ import Foundation
 enum CalculatorError: Error {
     case divisionByZero
     case invalidOperator
+    case invalidInteger
 }
 
 class Calculator {
@@ -177,9 +178,25 @@ class Calculator {
     /// 2. Enforces the correct argument pattern
     /// 3. Support unary + and -
     ///
-    /// Suggested helpers functions
-    /// 1. isOperator(token: String) -> Bool
-    /// 2. parseInteger(token: String) -> Int?
+    /// HELPER FUNCTIONS
+    /// Returns true if inputted token is a valid calculator operator during argument parsing
+    /// (+, - , *, /, %).These operators
+    func isOperator(_ token: String) -> Bool {
+        if token == "+" || token == "-" || token == "*" || token == "/" || token == "%" {
+            return true
+        }
+        return false
+    }
+    /// Supports unary + and - number prefixes
+    /// Used for converting Strings into an integer
+    /// Returns parsed Int if inputted is a valid integer otherwise return null
+    func parseInteger(token: String) -> Int? {
+        return nil
+    }
+    
+    func invalidIntegerError() throws -> Never {
+        throw CalculatorError.invalidInteger
+    }
     
     /// TODO
     /// ---------------------------------------------------------------------
