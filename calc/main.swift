@@ -23,9 +23,7 @@ let calculator = Calculator();
 let result = calculator.calculate(args: args);
 
 if result.hasPrefix("ERROR:") {
-    fputs(result + "\n", stderr)
     exit(1)
-} else {
-    print(result)
-    exit(0)
 }
+
+print(result)
