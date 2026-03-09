@@ -2,7 +2,7 @@
 //  main.swift
 //  calc
 //
-//  Created by Jesse Clark on 12/3/18.
+//  Created by Daniel Liu on 08/03/2026.
 //  Copyright © 2018 UTS. All rights reserved.
 //
 
@@ -20,16 +20,12 @@ args.removeFirst() // remove the name of the program
 let calculator = Calculator();
 
 // Calculate the result
-let result = calculator.add(no1: 1, no2: 1);
+let result = calculator.calculate(args: args);
 
-// BODMAS (Multiplication first, then add and sub)
-
-
-//print(result)
-//print(1 - 2)
-//print(4 + -10)
-//print(20 / 3)
-//print(5 + 20 * 3)
-print(-5 / +2)
-print(+2 - -2)
-print(2 + 4 * 3 - 6)
+if result.hasPrefix("ERROR:") {
+    fputs(result + "\n", stderr)
+    exit(1)
+} else {
+    print(result)
+    exit(0)
+}

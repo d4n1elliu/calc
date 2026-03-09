@@ -2,16 +2,18 @@
 //  Calculator.swift
 //  calc
 //
-//  Created by Jacktator on 31/3/20.
+//  Created by Daniel Liu on 09/03/2026
 //  Copyright © 2020 UTS. All rights reserved.
 //
 
 import Foundation
 
 enum CalculatorError: Error {
-    case divisionByZero
     case invalidOperator
     case invalidInteger
+    case divisionByZero
+    case invalidExpression
+    case integerOverflow
 }
 
 class Calculator {
@@ -35,7 +37,7 @@ class Calculator {
     ///
     /// - Warning: The result may yield Int overflow.
     /// - SeeAlso: https://developer.apple.com/documentation/swift/int/2884663-addingreportingoverflow
- 
+    
     /// Basic Arithmetic Functions - Helper function
     /// TODO
     /// Add addingReportingOverflow(...) to maintain overflow safe versions
@@ -51,261 +53,143 @@ class Calculator {
     /// 4. Perform arithmetic safely
     /// 5. Return the final result as a string
     ///
-    /// IMPORTANT
-    /// 1. Don't print here, JUST return result
-    /// 2. All errors needs to be handled and detected
-    ///
+    /// MAIN FUNCTION
     func calculate(args: [String]) -> String {
         
-        /// STEP 1:
-        /// Check argument count is valid.
-        /// Valid pattern:
-        /// number operator number operator number ...
-        ///
-        /// Therefore:
-        /// - args must NOT be empty
-        /// - args.count must be ODD
-                
-                
-        /// STEP 2:
-        /// Parse the FIRST number.
-        ///
-        /// Convert args[0] into an Int.
-        /// This may include unary signs:
-        ///   "+5", "-3" are VALID numbers.
-        ///
-        /// If conversion fails → invalid input error.
+        /// Main function
         
-        
-        /// STEP 3:
-        /// Iterate through remaining tokens TWO at a time:
-        ///
-        /// index 1 → operator
-        /// index 2 → number
-        /// index 3 → operator
-        /// index 4 → number
-        ///
-        /// Pattern:
-        /// for i in stride(from: 1, to: args.count, by: 2)
-        
-        
-        /// STEP 4:
-        /// Validate operator token.
-        ///
-        /// Allowed operators:
-        /// "+", "-", "x", "/", "%"
-        ///
-        /// Anything else → invalid input.
-       
-        
-        /// STEP 5:
-        /// Convert the following token into a number.
-        ///
-        /// Again allow unary + and -.
-        /// Reject:
-        ///   "abc"
-        ///   "4.5"
-        ///   "+"
-        
-        
-        /// STEP 6:
-        /// STORE parsed values instead of calculating immediately.
-        ///
-        /// Why?
-        /// Because multiplication/division/modulus must
-        /// happen BEFORE addition/subtraction.
-        ///
-        /// Hint:
-        /// You may want arrays like:
-        /// numbers = []
-        /// operators = []
-        
-        
-        /// STEP 7:
-        /// APPLY PRECEDENCE RULES
-        ///
-        /// Rule 1:
-        ///   x, /, % evaluated first
-        ///
-        /// Rule 2:
-        ///   evaluate LEFT → RIGHT
-        ///
-        /// Strategy hint:
-        /// Perform evaluation in TWO PASSES:
-        ///
-        /// PASS 1:
-        ///   Resolve x / % operations
-        ///   Reduce expression
-        ///
-        /// PASS 2:
-        ///   Resolve + -
-        
-        
-        /// STEP 8:
-        /// Perform arithmetic operations.
-        ///
-        /// For division:
-        ///   check divide-by-zero BEFORE computing.
-        
-        
-        /// STEP 9:
-        /// OVERFLOW CHECKING
-        ///
-        /// Assignment tests expect detection of:
-        ///   Int32 overflow range:
-        ///   -2147483648 ... 2147483647
-        ///
-        /// After EACH operation:
-        ///   verify result still inside bounds.
-        
-        
-        /// STEP 10:
-        /// Return final result as String.
-        
-        /// Todo: Calculate Result from the arguments. Replace dummyResult with your actual result;
-        let dummyResult = add(no1: 1, no2: 2);
-        
-        let result = String(dummyResult);
-        return(result)
-    }
-    
-    /// TODO
-    /// ---------------------------------------------------------------------
-    /// Parsing arguments
-    /// ---------------------------------------------------------------------
-    /// Purpose:
-    /// 1. Checking nunbers & operators
-    /// 2. Enforces the correct argument pattern
-    /// 3. Support unary + and -
-    ///
-    /// HELPER FUNCTIONS
-    /// Returns true if inputted token is a valid calculator operator during argument parsing
-    /// (+, - , *, /, %).These operators
-    func isOperator(_ token: String) -> Bool {
-        if token == "+" || token == "-" || token == "*" || token == "/" || token == "%" {
-            return true
+        if args.isEmpty {
+            return "ERROR: No expression provided."
         }
-        return false
-    }
-    /// Supports unary + and - number prefixes
-    /// Used for converting Strings into an integer
-    /// Returns parsed Int if inputted is a valid integer otherwise return null
-    func parseInteger(token: String) -> Int? {
-        return nil
+        
+        if args.count % 2 == 0 {
+            return "ERROR: Expression must contain an odd number of tokens."
+        }
+        
+        do {
+            let result = try evaluate(args)
+            return String(result)
+        } catch CalculatorError.invalidOperator {
+            return "ERROR: Invalid operator."
+        } catch CalculatorError.invalidInteger {
+            return "ERROR: Invalid integer."
+        } catch CalculatorError.divisionByZero {
+            return "ERROR: Division by zero."
+        } catch CalculatorError.integerOverflow {
+            return "ERROR: Integer overflow."
+        } catch {
+            return "ERROR: Invalid expression."
+        }
     }
     
-    func invalidIntegerError() throws -> Never {
-        throw CalculatorError.invalidInteger
+    // Parsing Integer checks
+    
+    func parsingInteger(_ token: String) throws -> Int {
+        guard let number = Int(token) else {
+            throw CalculatorError.invalidInteger
+        }
+        return number
     }
     
-    /// TODO
-    /// ---------------------------------------------------------------------
-    /// Validating outputs
-    /// ---------------------------------------------------------------------
-    /// Detects invalid cases such as
-    /// 1. Missing nunbers
-    /// 2. Consecutive operators
-    /// 3. Invalid characters
-    /// 4. Wrong arguement count
+    /// FUNCTION TWO EVALUATE
+    /// Parsing expressions into numbers & operators
+    func evaluate(_ args: [String]) throws -> Int {
+        let firstNumber = try parsingInteger(args[0])
+        
+        let checkfirstNumber = try outOfBoundsCheck(firstNumber)
+        
+        var numbers : [Int] = [checkfirstNumber]
+        var operators : [String] = []
+        
+        for i in stride(from:1, to: args.count, by: 2) {
+            let ops = args[i]
+            let numberToken = args[i + 1]
+            
+            guard isOperator(ops) else {
+                throw CalculatorError.invalidOperator
+            }
+            
+            let number = try parsingInteger(numberToken)
+            
+            operators.append(ops)
+            numbers.append(number)
+        }
+        return try evaluatePrecendene(numbers, operators)
+    }
     
-    /// TODO
-    /// ---------------------------------------------------------------------
-    /// Operator handling
-    /// ---------------------------------------------------------------------
-    /// Map operator symbols to actions:
-    /// 1. "+" -> addition
-    /// 2. "-" -> subtraction
-    /// 3. "x" -> multiplication
-    /// 4. "/" -> division
-    /// 5. "%" -> modulus
-
+    
+    /// EVALUATE WITH PRECEDECE
+    ///
+    /// First check from left to right to scan for multiplication *, division /, modulus %
+    func evaluatePrecendene(_ numbers: [Int], _ operators: [String]) throws -> Int {
+        var num = numbers
+        var ops = operators
+        var i = 0
+        
+        while i < ops.count {
+            if ops[i] == "x" || ops[i] == "/" || ops[i] == "%" {
+                let scanPrecendence = try operatorHandling(ops[i], left: num[i], right: num[i + 1])
+                let checkResults = try outOfBoundsCheck(scanPrecendence)
+                
+                num[i] = checkResults
+                num.remove(at: i + 1)
+                ops.remove(at: i)
+            } else {
+                i += 1
+            }
+        }
+            /// Second check for +, -
+        var finalResult = num[0]
+        for  i in 0..<ops.count {
+            let result = try operatorHandling(ops[i], left: finalResult, right: num[i + 1])
+            finalResult = try outOfBoundsCheck(result)
+        }
+        return finalResult
+    }
+        
+    /// Returning token for the matching operator
+    
+    func isOperator(_ token: String) -> Bool {
+        return token == "+" || token == "-" || token == "x" || token == "/" || token == "%"
+    }
+        
+    ///  Operator Precedence handling logic
     func operatorHandling(_ operatorSymbol: String, left: Int, right: Int) throws -> Int {
         switch operatorSymbol {
-            case "+":
-                return left + right
-            case "-":
-                return left - right
-            case "x":
-                return left * right
-            case "/":
-                guard right != 0 else { throw CalculatorError.divisionByZero }
-                return left / right
-            case "%":
-                guard right != 0 else { throw CalculatorError.divisionByZero }
-                return left % right
-            default:
+        case "+":
+            let (result, overflow) = left.addingReportingOverflow(right)
+            if overflow { throw CalculatorError.integerOverflow }
+            return result
+        case "-":
+            let (result, overflow) = left.subtractingReportingOverflow(right)
+            if overflow { throw CalculatorError.integerOverflow }
+            return result
+        case "x":
+            let (result, overflow) = left.multipliedReportingOverflow(by: right)
+            if overflow { throw CalculatorError.integerOverflow }
+            return result
+        case "/":
+            guard right != 0 else { throw CalculatorError.divisionByZero }
+            if left == Int.min && right == -1 {
+                throw CalculatorError.integerOverflow
+            }
+            return left / right
+        case "%":
+            guard right != 0 else { throw CalculatorError.divisionByZero }
+            return left % right
+        default:
             throw CalculatorError.invalidOperator
         }
     }
-    
-    /// TODO
-    /// ---------------------------------------------------------------------
-    /// Precedence rules
-    /// ---------------------------------------------------------------------
-    /// Implement two stages evaluation:
-    /// Stage 1:
-    ///    handle x / %
-    /// Stage 2:
-    ///  handle + -
-    ///
-    /// Ensure LEFT-TO-RIGHT evaluation.
-
-    
-    /// TODO
-    /// ---------------------------------------------------------------------
-    /// Arithmetic operations
-    /// ---------------------------------------------------------------------
-    /// Consider creating helper methods:
-    /// multiply(a,b)
-    /// divide(a,b)
-    /// modulus(a,b)
-    ///
-    /// Each should validate inputs before computing.
-    /// Helper function for multiply, divide & modulus
-    func multiply(_ a: Int, _ b: Int) -> Int {
-        return a * b
+        
+    /// Out of bounds checks
+    func outOfBoundsCheck(_ value : Int) throws -> Int {
+            
+        let minInteger = Int.min
+        let maxInteger = Int.max
+        if value < minInteger || value > maxInteger {
+            throw CalculatorError.integerOverflow
+        }
+        return value
     }
-
-    func divide(_ a: Int, _ b: Int) -> Int {
-        return a / b
-    }
-    
-    func modulus(_ a: Int, _ b: Int) -> Int {
-        return a % b
-    }
-    
-    /// TODO
-    /// -------------------------------------------------------------------
-    /// Error detection
-    /// ---------------------------------------------------------------------
-    /// Must detect:
-    /// - divide by zero
-    /// - invalid tokens
-    /// - malformed expressions
-    ///
-    /// Calculator should signal failure so main.swift
-    /// can exit with non-zero status.
-    
-    /// TODO
-    /// ---------------------------------------------------------------------
-    /// Overflow checking
-    /// ---------------------------------------------------------------------
-    /// Use Swift overflow-reporting APIs:
-    ///
-    /// addingReportingOverflow
-    /// subtractingReportingOverflow
-    /// multipliedReportingOverflow
-    ///
-    /// If overflow occurs → treat as error.
-    ///
-    ///
-    /// End of Calculator implementation
-    ///
-    /// This class parses command-line arguments, validates input,
-    /// evaluates expressions according to arithmetic precedence,
-    /// and safely returns the final integer result.
-    ///
-    /// All computation logic is contained here, while main.swift
-    /// is responsible only for input/output and program execution.
-    /// ------------------------------------------------------------
 }
